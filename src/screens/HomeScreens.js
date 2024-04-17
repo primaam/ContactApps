@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import React from 'react';
+import {useDispatch, useSelector} from 'react-redux';
 import {
   horizontalScale as hs,
   verticalScale as vs,
@@ -21,13 +22,15 @@ import {
   secondaryColor,
   thirdColor,
 } from '../assets/color';
-import PrimaryButton from '../components/PrimaryButton';
 import {fakeData} from '../util/fakeData';
-import Contact from '../components/Contact';
-import MainLayout from '../components/MainLayout';
+import {PrimaryButton, Contact, MainLayout} from '../components';
 
 const HomeScreens = ({navigation}) => {
   const [refreshing, setRefreshing] = React.useState(false);
+
+  const contactListData = useSelector(
+    ({contactListStore}) => contactListStore.data,
+  );
 
   const backAction = () => {
     if (navigation.isFocused()) {
@@ -72,21 +75,31 @@ const HomeScreens = ({navigation}) => {
         <Text style={styles.headerText}>Contact List</Text>
       </View>
       <MainLayout>
-        <FlatList
-          showsVerticalScrollIndicator={false}
-          data={fakeData}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
-          renderItem={({item}) => (
-            <Contact
-              firstName={item.firstName}
-              lastName={item.lastName}
-              photo={item.photo}
-              onPress={() => navigation.navigate('Details', {...item})}
-            />
-          )}
-          keyExtractor={item => item.id}
-        />
+        {contactListData.length > 0 ? (
+          <FlatList
+            showsVerticalScrollIndicator={false}
+            data={contactListData}
+            onRefresh={handleRefresh}
+            refreshing={refreshing}
+            renderItem={({item}) => (
+              <Contact
+                firstName={item.firstName}
+                lastName={item.lastName}
+                photo={item.photo}
+                onPress={() => navigation.navigate('Details', {...item})}
+              />
+            )}
+            keyExtractor={item => item.id}
+          />
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text
+              style={[
+                styles.headerText,
+                {fontSize: ms(16), textAlign: 'center'},
+              ]}>{`Empty contact list:(`}</Text>
+          </View>
+        )}
       </MainLayout>
       <View style={styles.buttonContainer}>
         <PrimaryButton
@@ -126,5 +139,10 @@ const styles = StyleSheet.create({
     fontSize: ms(24),
     fontFamily: 'Poppins-Medium',
     color: primaryTextColor,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
   },
 });
