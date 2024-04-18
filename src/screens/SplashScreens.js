@@ -19,7 +19,7 @@ import {storeContactListData} from '../redux/reducer/getContactRed';
 
 const SplashScreens = ({navigation}) => {
   const dispatch = useDispatch();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
     Animated.timing(fadeAnim, {

@@ -8,7 +8,8 @@ import {
   View,
 } from 'react-native';
 import React from 'react';
-import Header from '../components/Header';
+import {useDispatch, useSelector} from 'react-redux';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {
   horizontalScale as hs,
   verticalScale as vs,
@@ -19,17 +20,25 @@ import {
   primaryTextColor,
   secondaryColor,
   thirdColor,
+  warnColor,
 } from '../assets/color';
 import Icon from 'react-native-vector-icons/Ionicons';
-import MainLayout from '../components/MainLayout';
-import Form from '../components/Form';
-import PrimaryButton from '../components/PrimaryButton';
+
+import {MainLayout, Form, PrimaryButton, Header} from '../components';
+
+import {updateContact} from '../redux/action/updateContactAct';
+import {deleteContact} from '../redux/action/deleteContactAct';
+import {storeUpdateContactData} from '../redux/reducer/updateContactRed';
+import {storeDeleteContactData} from '../redux/reducer/deleteContactRed';
 
 const DetailScreens = ({route, navigation}) => {
   const {id, firstName, lastName, age, photo} = route.params;
+  const [showWarning, setShowWarning] = React.useState(false);
   const [details, setDetails] = React.useState({
     ...route.params,
   });
+
+  const dispatch = useDispatch();
 
   const handleFormChange = (key, value) => {
     setDetails(prevDetails => ({
@@ -38,11 +47,55 @@ const DetailScreens = ({route, navigation}) => {
     }));
   };
 
-  const handleSubmit = () => {
-    navigation.goBack();
+  const handleImagePick = () => {
+    launchImageLibrary({
+      mediaType: 'photo',
+      quality: 1,
+    }).then(res => {
+      if (res.didCancel) {
+        console.log('Image selection cancelled');
+      } else {
+        handleFormChange('photo', res.assets[0].uri);
+      }
+    });
   };
 
-  const handleDelete = () => {};
+  const handleUpdate = async () => {
+    try {
+      if (
+        details.age === null ||
+        details.firstName.length === 0 ||
+        details.lastName.length === 0 ||
+        details.photo.length === 0
+      ) {
+        setShowWarning(true);
+      } else {
+        const update = await updateContact({...details});
+        dispatch(storeUpdateContactData(update));
+
+        setTimeout(() => {
+          setShowWarning(false);
+          navigation.goBack();
+        }, 1000);
+      }
+    } catch (error) {
+      console.log('error add contact', error);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const deleteData = await deleteContact(details.id);
+      dispatch(storeDeleteContactData(deleteData));
+
+      setTimeout(() => {
+        setShowWarning(false);
+        navigation.goBack();
+      }, 1000);
+    } catch (error) {
+      console.log('error add contact', error);
+    }
+  };
   return (
     <SafeAreaView style={{backgroundColor: primaryColor}}>
       <Header
@@ -52,7 +105,9 @@ const DetailScreens = ({route, navigation}) => {
       />
       <MainLayout>
         <View style={styles.cameraContainer}>
-          <Pressable style={styles.cameraIconContainer}>
+          <Pressable
+            style={styles.cameraIconContainer}
+            onPress={() => handleImagePick()}>
             {details.photo.substring(0, 5) !== 'https' ? (
               <Icon name="camera" size={ms(30)} color={primaryColor} />
             ) : (
@@ -81,13 +136,20 @@ const DetailScreens = ({route, navigation}) => {
         />
       </MainLayout>
       <View style={styles.buttonContainer}>
+        {showWarning === true ? (
+          <Text style={styles.warningText}>
+            You cannot leave the empty field
+          </Text>
+        ) : (
+          <></>
+        )}
         <PrimaryButton
           isWarning={true}
           onPress={() => handleDelete()}
           title={'Delete'}
         />
         <View style={{marginVertical: vs(10)}} />
-        <PrimaryButton onPress={() => handleSubmit()} title={'Update'} />
+        <PrimaryButton onPress={() => handleUpdate()} title={'Update'} />
       </View>
     </SafeAreaView>
   );
@@ -120,5 +182,12 @@ const styles = StyleSheet.create({
     bottom: vs(80),
     width: '100%',
     paddingHorizontal: hs(20),
+  },
+  warningText: {
+    color: warnColor,
+    fontSize: ms(14),
+    fontFamily: 'Poppins-Medium',
+    marginBottom: vs(15),
+    textAlign: 'center',
   },
 });

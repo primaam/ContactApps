@@ -22,11 +22,14 @@ import {
   secondaryColor,
   thirdColor,
 } from '../assets/color';
-import {fakeData} from '../util/fakeData';
 import {PrimaryButton, Contact, MainLayout} from '../components';
+
+import {getContactList} from '../redux/action/getContactAct';
+import {storeContactListData} from '../redux/reducer/getContactRed';
 
 const HomeScreens = ({navigation}) => {
   const [refreshing, setRefreshing] = React.useState(false);
+  const dispatch = useDispatch();
 
   const contactListData = useSelector(
     ({contactListStore}) => contactListStore.data,
@@ -62,11 +65,17 @@ const HomeScreens = ({navigation}) => {
     };
   }, []);
 
-  const handleRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      const contactList = await getContactList();
+      setTimeout(() => {
+        dispatch(storeContactListData(contactList.data));
+        setRefreshing(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Error fetching contact list:', error);
+    }
   };
 
   return (

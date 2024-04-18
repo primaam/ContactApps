@@ -9,7 +9,7 @@ const contactListSlice = createSlice({
   initialState,
   reducers: {
     storeContactListData: (state, actions) => {
-      state.data = actions.payload;
+      state.data = actions.payload.data;
     },
   },
 });

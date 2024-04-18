@@ -8,7 +8,8 @@ import {
 } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Header from '../components/Header';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {useDispatch, useSelector} from 'react-redux';
 import {
   horizontalScale as hs,
   verticalScale as vs,
@@ -19,18 +20,24 @@ import {
   primaryTextColor,
   secondaryColor,
   thirdColor,
+  warnColor,
 } from '../assets/color';
-import MainLayout from '../components/MainLayout';
-import Form from '../components/Form';
-import PrimaryButton from '../components/PrimaryButton';
+
+import {Header, MainLayout, Form, PrimaryButton} from '../components';
+
+import {addContact} from '../redux/action/addContactAct';
+import {storeNewContactData} from '../redux/reducer/addContactRed';
 
 const AddContactScreens = ({navigation}) => {
+  const [showWarning, setShowWarning] = React.useState(false);
   const [form, setForm] = React.useState({
     firstName: '',
     lastName: '',
     age: null,
     photo: '',
   });
+
+  const dispatch = useDispatch();
 
   const handleFormChange = (key, value) => {
     setForm(prevForm => ({
@@ -59,6 +66,42 @@ const AddContactScreens = ({navigation}) => {
     return newText;
   };
 
+  const handleImagePick = () => {
+    launchImageLibrary({
+      mediaType: 'photo',
+      quality: 1,
+    }).then(res => {
+      if (res.didCancel) {
+        console.log('Image selection cancelled');
+      } else {
+        handleFormChange('photo', res.assets[0].uri);
+      }
+    });
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (
+        form.age === null ||
+        form.firstName.length === 0 ||
+        form.lastName.length === 0 ||
+        form.photo.length === 0
+      ) {
+        setShowWarning(true);
+      } else {
+        const submitContact = await addContact({...form});
+        dispatch(storeNewContactData(submitContact));
+
+        setTimeout(() => {
+          setShowWarning(false);
+          navigation.goBack();
+        }, 1000);
+      }
+    } catch (error) {
+      console.log('error add contact', error);
+    }
+  };
+
   return (
     <SafeAreaView style={{backgroundColor: primaryColor}}>
       <Header
@@ -68,7 +111,9 @@ const AddContactScreens = ({navigation}) => {
       />
       <MainLayout>
         <View style={styles.cameraContainer}>
-          <Pressable style={styles.cameraIconContainer}>
+          <Pressable
+            style={styles.cameraIconContainer}
+            onPress={() => handleImagePick()}>
             {form.photo.length == 0 ? (
               <Icon name="camera" size={ms(30)} color={primaryColor} />
             ) : (
@@ -97,6 +142,13 @@ const AddContactScreens = ({navigation}) => {
         />
       </MainLayout>
       <View style={styles.buttonContainer}>
+        {showWarning === true ? (
+          <Text style={styles.warningText}>
+            You have to complete all the form detail first
+          </Text>
+        ) : (
+          <></>
+        )}
         <PrimaryButton onPress={() => handleSubmit()} title={'Submit'} />
       </View>
     </SafeAreaView>
@@ -130,5 +182,12 @@ const styles = StyleSheet.create({
     width: vs(80),
     height: vs(80),
     borderRadius: vs(40),
+  },
+  warningText: {
+    color: warnColor,
+    fontSize: ms(14),
+    fontFamily: 'Poppins-Medium',
+    marginBottom: vs(15),
+    textAlign: 'center',
   },
 });
