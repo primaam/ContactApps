@@ -1,15 +1,16 @@
+import React from 'react';
 import {
   Image,
   Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
-import React from 'react';
-import {useDispatch, useSelector} from 'react-redux';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {useDispatch} from 'react-redux';
+import {launchImageLibrary} from 'react-native-image-picker';
+import Icon from 'react-native-vector-icons/Ionicons';
+
 import {
   horizontalScale as hs,
   verticalScale as vs,
@@ -22,7 +23,6 @@ import {
   thirdColor,
   warnColor,
 } from '../assets/color';
-import Icon from 'react-native-vector-icons/Ionicons';
 
 import {MainLayout, Form, PrimaryButton, Header} from '../components';
 
@@ -54,7 +54,10 @@ const DetailScreens = ({route, navigation}) => {
     }).then(res => {
       if (res.didCancel) {
         console.log('Image selection cancelled');
+      } else if (res.errorCode || res.errorMessage) {
+        console.log('Image selection error');
       } else {
+        console.log(res);
         handleFormChange('photo', res.assets[0].uri);
       }
     });

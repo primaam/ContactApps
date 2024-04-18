@@ -73,7 +73,10 @@ const AddContactScreens = ({navigation}) => {
     }).then(res => {
       if (res.didCancel) {
         console.log('Image selection cancelled');
+      } else if (res.errorCode || res.errorMessage) {
+        console.log('Image selection error');
       } else {
+        console.log(res);
         handleFormChange('photo', res.assets[0].uri);
       }
     });
@@ -102,6 +105,7 @@ const AddContactScreens = ({navigation}) => {
     }
   };
 
+  console.log(form);
   return (
     <SafeAreaView style={{backgroundColor: primaryColor}}>
       <Header

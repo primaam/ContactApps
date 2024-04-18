@@ -2,8 +2,6 @@ import {
   Alert,
   BackHandler,
   FlatList,
-  Modal,
-  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -16,12 +14,7 @@ import {
   verticalScale as vs,
   moderateScale as ms,
 } from '../util/metrics';
-import {
-  primaryColor,
-  primaryTextColor,
-  secondaryColor,
-  thirdColor,
-} from '../assets/color';
+import {primaryColor, primaryTextColor, secondaryColor} from '../assets/color';
 import {PrimaryButton, Contact, MainLayout} from '../components';
 
 import {getContactList} from '../redux/action/getContactAct';
@@ -88,6 +81,7 @@ const HomeScreens = ({navigation}) => {
           <FlatList
             showsVerticalScrollIndicator={false}
             data={contactListData}
+            style={styles.listContainer}
             onRefresh={handleRefresh}
             refreshing={refreshing}
             renderItem={({item}) => (
@@ -137,6 +131,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: primaryTextColor,
     backgroundColor: primaryColor,
+  },
+  listContainer: {
+    marginBottom: vs(170),
   },
   buttonContainer: {
     position: 'absolute',

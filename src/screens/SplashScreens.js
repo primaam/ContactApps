@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import React from 'react';
-import {useDispatch, useSelector} from 'react-redux';
 import {primaryTextColor, secondaryColor} from '../assets/color';
 import {
   horizontalScale as hs,
@@ -18,6 +17,7 @@ import {getContactList} from '../redux/action/getContactAct';
 import {storeContactListData} from '../redux/reducer/getContactRed';
 
 const SplashScreens = ({navigation}) => {
+  const {useDispatch} = require('react-redux');
   const dispatch = useDispatch();
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
 
